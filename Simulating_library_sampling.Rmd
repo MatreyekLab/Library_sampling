@@ -2,7 +2,7 @@
 title: "Simulating library recombination"
 author: "KAM"
 date: "8/8/2021"
-output: html_document
+output: github_document
 ---
 
 ```{r setup, include=FALSE}
@@ -14,15 +14,15 @@ library(MASS)
 set.seed(1234567)
 ```
 
-```{r Get a z-score on this stuff}
-nudt15 <- read.csv(file = "NUDT15_missense.csv", header = TRUE, stringsAsFactors = FALSE)
+```{r Imporating the NUDT15 and PTEN library Illumina data and getting a z-score}
+nudt15 <- read.csv(file = "Data/NUDT15_missense.csv", header = TRUE, stringsAsFactors = FALSE)
 nudt15 <- rbind(c("WT","WT",round(sum(nudt15$count)*0.3,0)),nudt15)  ## Because there were about 25% WTs
 nudt15$count <- as.integer(nudt15$count)
 nudt15$freq <- nudt15$count / sum(nudt15$count)
 nudt15$zscore <- (nudt15$freq - mean(nudt15$freq))/sd(nudt15$freq)
 
 ## Bring in the PTEN data
-pten <- read.csv(file = "PTEN_library_distribution.csv", header = TRUE, stringsAsFactors = TRUE)
+pten <- read.csv(file = "Data/PTEN_library_distribution.csv", header = TRUE, stringsAsFactors = TRUE)
 colnames(pten) <- c("row_number","variant","freq")
 
 #pten_missense <- subset(pten, variant != "_remaining")[,c("variant","freq")]
@@ -35,7 +35,7 @@ Fraction_of_uniform_distribution_plot <- ggplot() + theme_bw() + scale_x_log10()
   labs(x = "Normalized to uniform distribution frequency", y = "Density", title = "Black is PTEN, red is NUDT15") +
   geom_density(data = pten_missense, aes(x = freq/(1/nrow(pten_missense)))) + 
   geom_density(data = nudt15, aes(x = freq/(1/nrow(nudt15))), color = "red") 
-ggsave(file = "Fraction_of_uniform_distribution_plot.png", Fraction_of_uniform_distribution_plot, height = 3, width = 4)
+ggsave(file = "Plots/Fraction_of_uniform_distribution_plot.png", Fraction_of_uniform_distribution_plot, height = 3, width = 4)
 Fraction_of_uniform_distribution_plot
 
 ## CV for NUDT15
@@ -76,11 +76,11 @@ nudt15_pten_comparison_plot <- ggplot() + theme_bw() +  theme(legend.position = 
   scale_x_log10(expand = c(0,0.01)) + scale_y_continuous(limits = c(0.5,1), expand = c(0,0.01)) + scale_colour_manual(values = c("black", "red")) +
   geom_line(data = real_summary_frame_melted, aes(x = cells, y = value, color = library)) +
   geom_point(data = real_summary_frame_melted, aes(x = cells, y = value, color = library))
-ggsave(file = "Real_data_nudt15_pten_comparison_plot.png", nudt15_pten_comparison_plot, height = 3, width = 4)
+ggsave(file = "Plots/Real_data_nudt15_pten_comparison_plot.png", nudt15_pten_comparison_plot, height = 3, width = 4)
 nudt15_pten_comparison_plot
 ```
 
-```{r Can I recreate the distribution using the a log-normal approximation?}
+```{r Trying to recreate the distribution using a log-normal approximation}
 nudt15_2 <- subset(nudt15, freq > 0)
 nudt15_2$log10 <- log10(nudt15_2$freq)
 
@@ -96,7 +96,7 @@ nudt15_fitted_distribution_plot <- ggplot() + theme_bw() + labs(title = "NUDT15:
   geom_density(data = nudt15, aes(x = freq), color = "black") +
   geom_density(data = nudt15_recreation2, aes(x = value), color = "red")
 nudt15_fitted_distribution_plot
-  ggsave(file = "nudt15_fitted_distribution_plot.png", nudt15_fitted_distribution_plot, height = 3, width = 4)
+  ggsave(file = "Plots/nudt15_fitted_distribution_plot.png", nudt15_fitted_distribution_plot, height = 3, width = 4)
 
 pten_fit <- fitdistr(subset(pten_missense, freq > 0)$freq, "log-normal")
 pten_para <- pten_fit$estimate
@@ -109,7 +109,7 @@ pten_fitted_distribution_plot <- ggplot() + theme_bw() + labs(title = "PTEN: Bla
   geom_density(data = pten_missense, aes(x = freq), color = "black") +
   geom_density(data = pten_recreation2, aes(x = value), color = "red")
 pten_fitted_distribution_plot
-ggsave(file = "pten_fitted_distribution_plot.png", pten_fitted_distribution_plot, height = 3, width = 4)
+ggsave(file = "Plots/pten_fitted_distribution_plot.png", pten_fitted_distribution_plot, height = 3, width = 4)
   
 ```
 
@@ -141,7 +141,7 @@ nudt15_pten_comparison_plot <- ggplot() +
   scale_x_log10(expand = c(0,0.01)) + scale_y_continuous(limits = c(0.5,1), expand = c(0,0.01)) + scale_colour_manual(values = c("black", "red")) +
   geom_line(data = summary_frame_melted, aes(x = cells, y = value, color = library)) +
   geom_point(data = summary_frame_melted, aes(x = cells, y = value, color = library))
-ggsave(file = "Recreated_data_nudt15_pten_comparison_plot.png", nudt15_pten_comparison_plot, height = 3, width = 4)
+ggsave(file = "Plots/Recreated_data_nudt15_pten_comparison_plot.png", nudt15_pten_comparison_plot, height = 3, width = 4)
 nudt15_pten_comparison_plot
 ```
 
